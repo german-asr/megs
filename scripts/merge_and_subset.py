@@ -28,7 +28,7 @@ def run(download_folder, output_folder):
         full_path = os.path.join(download_folder, name)
         c = audiomate.Corpus.load(
             full_path,
-            reader=reader_type,
+            reader=reader_type
         )
         corpora[name] = c
 

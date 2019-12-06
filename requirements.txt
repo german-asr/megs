@@ -1,4 +1,4 @@
 click==7.0
 tqdm==4.39.0
-git+git://github.com/ynop/audiomate.git@6e47662#egg=audiomate
+git+git://github.com/ynop/audiomate.git@92f5725#egg=audiomate
 git+git://github.com/ynop/spoteno.git@7700d53#egg=spoteno

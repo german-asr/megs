@@ -41,7 +41,7 @@ class TextNormalizationValidator(base.Validator):
         for i, (output, invalid_characters) in enumerate(result):
             utt_idx = utt_ids[i]
             transcript = transcripts[i]
-            if len(invalid_characters) > 0:
+            if len(invalid_characters) > 0 or len(output) <= 0:
                 invalid_utterances[utt_idx] = (
                     transcript, list(invalid_characters)
                 )

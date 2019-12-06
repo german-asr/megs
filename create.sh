@@ -48,8 +48,15 @@ echo "##############################################################"
 python scripts/equivalence.py generate $out_path
 
 echo "##############################################################"
-echo "# Waverize"
+echo "# Normalize transcripts"
 echo "##############################################################"
 full_path=$out_path/full
+norm_path=$out_path/full_normalized
+python scripts/normalize_text.py $full_path $norm_path
+
+echo "##############################################################"
+echo "# Waverize"
+echo "##############################################################"
+in_path=$out_path/full_normalized
 wave_path=$out_path/full_waverized
-python scripts/waverize.py $full_path $wave_path
+python scripts/waverize.py $in_path $wave_path

@@ -24,8 +24,8 @@ val_path=$out_path/validation
 python scripts/validate.py $dl_path $val_path
 
 
-  The results from the validation step (invalid utterances)
-  have to be incorporated to audiomate manually.
+#  The results from the validation step (invalid utterances)
+#  have to be incorporated to audiomate manually.
 
 
 echo "##############################################################"

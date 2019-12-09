@@ -40,12 +40,12 @@ Checkout [https://github.com/ynop/audiomate](https://github.com/ynop/audiomate) 
 
 ## Corpus Statistics
 
-| Part      | h      | Speakers                                            |
-| ----------|--------| ----------------------------------------------------|
-| full      | 1039   | x (not known due to the absence of info in M-Ailabs |
-| train     | 486    | x (not known due to the absence of info in M-Ailabs |
-| dev       | 54     | 1259                                                |
-| test      | 54     | 2101                                                |
+| Part       | h      | Speakers                                            |
+| -----------| -------| ----------------------------------------------------|
+| unfiltered | 1021   | x (not known due to the absence of info in M-Ailabs |
+| train      | 474    | x (not known due to the absence of info in M-Ailabs |
+| dev        | 51     | 1251                                                |
+| test       | 51     | 2112                                                |
 
 ## Corpus sources
 

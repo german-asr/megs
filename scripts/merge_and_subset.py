@@ -1,6 +1,8 @@
 import os
 import click
 
+from tqdm import tqdm
+
 import audiomate
 from audiomate.corpus import subset
 
@@ -68,13 +70,10 @@ def run(download_folder, output_folder):
     print('Create merged train/test/dev subviews ...')
     for part in ['train', 'dev', 'test']:
         utt_ids = set()
-        for name in ['common_voice', 'tuda', 'voxforge', 'swc']:
+
+        for name, corpus in corpora.items():
             sv = full_corpus.subviews['{}_{}'.format(part, name)]
             utt_ids.update(sv.utterances.keys())
-
-        if part == 'train':
-            utt_ids.update(
-                full_corpus.subviews['full_mailabs'].utterances.keys())
 
         part_filter = subset.MatchingUtteranceIdxFilter(utt_ids)
         part_subview = subset.Subview(corpus, filter_criteria=[part_filter])
@@ -86,7 +85,11 @@ def run(download_folder, output_folder):
 
 
 def prepare_corpus(corpus, name):
-    too_long = utts_too_long(corpus)
+    if name != 'common_voice':
+        print(' - {}: Find utterances that are too long'.format(name))
+        too_long = utts_too_long(corpus)
+    else:
+        too_long = set()
 
     if name == 'mailabs':
         # we only use mailabs for training
@@ -141,7 +144,7 @@ def prepare_corpus(corpus, name):
 def utts_too_long(corpus):
     utts = set()
 
-    for utt in corpus.utterances.values():
+    for utt in tqdm(corpus.utterances.values()):
         if utt.duration > MAX_TRAIN_UTT_DURATION:
             utts.add(utt.idx)
 

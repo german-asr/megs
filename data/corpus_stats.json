@@ -4,8 +4,8 @@
   "num_issuers": 32374,
   "subviews": {
     "train": {
-      "duration": 1933432.0194690826,
-      "num_utterances": 444204,
+      "duration": 1932846.8184240141,
+      "num_utterances": 444185,
       "num_issuers": 27792
     },
     "dev_tuda": {

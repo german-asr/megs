@@ -42,8 +42,8 @@ Checkout [https://github.com/ynop/audiomate](https://github.com/ynop/audiomate) 
 
 | Part       | h      | Speakers                                            |
 | -----------| -------| ----------------------------------------------------|
-| unfiltered | 1021   | not known due to the absence of info in M-Ailabs |
-| train                          |   537.06 | not known due to the absence of info in M-Ailabs      |
+| unfiltered | 1021.31   | not known due to the absence of info in M-Ailabs |
+| train                          |   536.90 | not known due to the absence of info in M-Ailabs      |
 | dev                            |    17.75 | 1151       |
 | test                           |    18.22 | 2037       |
 | full_common_voice              |   324.19 | 4852       |

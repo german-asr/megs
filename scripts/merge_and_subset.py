@@ -1,11 +1,15 @@
 import os
 import click
 
+from tqdm import tqdm
+
 import audiomate
 from audiomate.corpus import subset
 
 
 SEED = 3294
+MAX_DEV_TEST_DURATION = 15000
+MAX_TRAIN_UTT_DURATION = 25.0
 
 
 @click.command()
@@ -33,44 +37,8 @@ def run(download_folder, output_folder):
         corpora[name] = c
 
     print('Create Train/Dev/Test - if not already exist')
-    # tuda/common-voice already have predefined train/test/dev sets
-    # mailabs is not used as dev/test, since the speakers are not known
-    # so we would have split the corpus very coarse
-    for name in ['swc', 'voxforge']:
-        print(' - {} ...'.format(name))
-        c = corpora[name]
-        train, dev, test = create_train_dev_test(c)
-        c.import_subview('train', train)
-        c.import_subview('dev', dev)
-        c.import_subview('test', test)
-
-    print('Remove/Rename subviews')
-    # common voice
-    del corpora['common_voice'].subviews['other']
-    del corpora['common_voice'].subviews['validated']
-
-    # mailabs
-    del corpora['mailabs'].subviews['de_DE']
-
-    # tuda
-    # we only use kinect-raw files
-    # otherwise sentence of the tuda would occur multiple times
-    # in contrast to other datasets
-    tuda = corpora['tuda']
-
-    del tuda.subviews['train']
-    del tuda.subviews['dev']
-    del tuda.subviews['test']
-
-    tuda.subviews['train'] = tuda.subviews['train_kinect-raw']
-    tuda.subviews['dev'] = tuda.subviews['dev_kinect-raw']
-    tuda.subviews['test'] = tuda.subviews['test_kinect-raw']
-
-    for mic in ['yamaha', 'kinect-beam', 'kinect-raw', 'realtek', 'samson']:
-        del tuda.subviews[mic]
-
-        for part in ['dev', 'test', 'train']:
-            del tuda.subviews['{}_{}'.format(part, mic)]
+    for name, corpus in corpora.items():
+        prepare_corpus(corpus, name)
 
     print('Insert full subviews')
     #
@@ -102,13 +70,10 @@ def run(download_folder, output_folder):
     print('Create merged train/test/dev subviews ...')
     for part in ['train', 'dev', 'test']:
         utt_ids = set()
-        for name in ['common_voice', 'tuda', 'voxforge', 'swc']:
+
+        for name, corpus in corpora.items():
             sv = full_corpus.subviews['{}_{}'.format(part, name)]
             utt_ids.update(sv.utterances.keys())
-
-        if part == 'train':
-            utt_ids.update(
-                full_corpus.subviews['full_mailabs'].utterances.keys())
 
         part_filter = subset.MatchingUtteranceIdxFilter(utt_ids)
         part_subview = subset.Subview(corpus, filter_criteria=[part_filter])
@@ -119,17 +84,91 @@ def run(download_folder, output_folder):
     full_corpus.save_at(output_folder)
 
 
+def prepare_corpus(corpus, name):
+    if name != 'common_voice':
+        print(' - {}: Find utterances that are too long'.format(name))
+        too_long = utts_too_long(corpus)
+    else:
+        too_long = set()
+
+    if name == 'mailabs':
+        # we only use mailabs for training
+        # since we don't know the speakers
+        train_utts = set(corpus.utterances.keys())
+        train_utts = train_utts - too_long
+        dev_utts = set()
+        test_utts = set()
+
+    elif name == 'tuda':
+        # we only use kinect-raw files
+        # otherwise sentence of the tuda would occur multiple times
+        # in contrast to other datasets
+        train_utts = set(corpus.subviews['train_kinect-raw'].utterances.keys())
+        train_utts = train_utts - too_long
+        dev_utts = set(corpus.subviews['dev_kinect-raw'].utterances.keys())
+        test_utts = set(corpus.subviews['test_kinect-raw'].utterances.keys())
+
+    elif name == 'common_voice':
+        train_utts = set(corpus.subviews['train'].utterances.keys())
+        train_utts = train_utts - too_long
+        dev_utts = set(corpus.subviews['dev'].utterances.keys())
+        test_utts = set(corpus.subviews['test'].utterances.keys())
+
+    else:
+        dur_filter = subset.MatchingUtteranceIdxFilter(too_long, inverse=True)
+        dur_subview = subset.Subview(corpus, filter_criteria=[dur_filter])
+        train, dev, test = create_train_dev_test(dur_subview)
+
+        train_utts = set(train.utterances.keys())
+        dev_utts = set(dev.utterances.keys())
+        test_utts = set(test.utterances.keys())
+
+    # Remove all subviews
+    for subname in list(corpus.subviews.keys()):
+        del corpus.subviews[subname]
+
+    # Add new subviews
+    train_filter = subset.MatchingUtteranceIdxFilter(train_utts)
+    train_subview = subset.Subview(corpus, filter_criteria=[train_filter])
+    corpus.import_subview('train', train_subview)
+
+    dev_filter = subset.MatchingUtteranceIdxFilter(dev_utts)
+    dev_subview = subset.Subview(corpus, filter_criteria=[dev_filter])
+    corpus.import_subview('dev', dev_subview)
+
+    test_filter = subset.MatchingUtteranceIdxFilter(test_utts)
+    test_subview = subset.Subview(corpus, filter_criteria=[test_filter])
+    corpus.import_subview('test', test_subview)
+
+
+def utts_too_long(corpus):
+    utts = set()
+
+    for utt in tqdm(corpus.utterances.values()):
+        if utt.duration > MAX_TRAIN_UTT_DURATION:
+            utts.add(utt.idx)
+
+    return utts
+
+
 def create_train_dev_test(corpus):
     """
     Create train/dev/test subsets of the given corpus.
     Size is computed using length of the transcriptions.
     """
+
+    total_duration = corpus.total_duration
+    test_dev_train_ratio = MAX_DEV_TEST_DURATION / total_duration
+
+    if test_dev_train_ratio > 0.15:
+        test_dev_train_ratio = 0.15
+
     splitter = subset.Splitter(corpus, SEED)
     subviews = splitter.split_by_label_length(
         proportions={
-            'train': 0.7,
-            'dev': 0.15,
-            'test': 0.15,
+            'train': 1.0 - (2 * test_dev_train_ratio),
+            'dev': test_dev_train_ratio,
+            'test': test_dev_train_ratio,
         },
         label_list_idx=audiomate.corpus.LL_WORD_TRANSCRIPT,
         separate_issuers=True

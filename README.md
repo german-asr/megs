@@ -42,10 +42,30 @@ Checkout [https://github.com/ynop/audiomate](https://github.com/ynop/audiomate) 
 
 | Part       | h      | Speakers                                            |
 | -----------| -------| ----------------------------------------------------|
-| unfiltered | 1021   | x (not known due to the absence of info in M-Ailabs |
-| train      | 474    | x (not known due to the absence of info in M-Ailabs |
-| dev        | 51     | 1251                                                |
-| test       | 51     | 2112                                                |
+| unfiltered | 1021.31   | not known due to the absence of info in M-Ailabs |
+| train                          |   536.90 | not known due to the absence of info in M-Ailabs      |
+| dev                            |    17.75 | 1151       |
+| test                           |    18.22 | 2037       |
+| full_common_voice              |   324.19 | 4852       |
+| train_common_voice             |    10.20 | 552        |
+| dev_common_voice               |     7.04 | 1010       |
+| test_common_voice              |     7.71 | 1901       |
+| full_mailabs                   |   233.66 | -      |
+| train_mailabs                  |   233.50 | -      |
+| dev_mailabs                    |     0.00 | 0          |
+| test_mailabs                   |     0.00 | 0          |
+| full_swc                       |   248.47 | 569        |
+| train_swc                      |   238.01 | 527        |
+| dev_swc                        |     4.26 | 26         |
+| test_swc                       |     4.18 | 16         |
+| full_tuda                      |   183.30 | 179        |
+| train_tuda                     |    31.49 | 146        |
+| dev_tuda                       |     2.41 | 16         |
+| test_tuda                      |     2.38 | 17         |
+| full_voxforge                  |    31.69 | 328        |
+| train_voxforge                 |    23.70 | 126        |
+| dev_voxforge                   |     4.04 | 99         |
+| test_voxforge                  |     3.96 | 103        |
 
 ## Corpus sources
 
@@ -65,3 +85,4 @@ The scripts ``create.sh`` contains the commands to create a new version of the c
 | Version   | Changes                    |
 | ----------|----------------------------|
 | v1        | Initial version            |
+| v2        | Smaller test sets, Filter long utterances (> 25s) |
